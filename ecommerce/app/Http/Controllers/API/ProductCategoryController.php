@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductCategoryController extends Controller
 {
-    private $siteUrl = 'https://belanja.penuhmakna.co.id/';
+    private $siteUrl = 'http://belanja.web.test/';
 
     public function all(Request $request)
     {
@@ -50,7 +50,7 @@ class ProductCategoryController extends Controller
         //         // $category->orderBy('id')->paginate($limit),
         //     'Product category successfully fetched'
         // );
-        
+
         $categories = $category->get(); // paginator ->limit($limit)
 
         return ResponseFormatter::success(
@@ -78,21 +78,21 @@ class ProductCategoryController extends Controller
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-        $path = $file->store('public/photoCategory');
-        $photoUrl = Storage::url($path);
-        $photoUrl = str_replace('public/', 'public/', $photoUrl);
-        $category->photo = $this->siteUrl . $photoUrl;
+            $path = $file->store('public/photoCategory');
+            $photoUrl = Storage::url($path);
+            $photoUrl = str_replace('public/', 'public/', $photoUrl);
+            $category->photo = $this->siteUrl . $photoUrl;
         }
-        
+
         /// Save banner file to storage
-    if ($request->hasFile('banner')) {
-        $bannerFile = $request->file('banner');
-        $bannerPath = 'public/bannerCategory';
-        $bannerFileName = $bannerFile->getClientOriginalName();
-        $bannerFile->storeAs($bannerPath, $bannerFileName);
-        $bannerUrl = Storage::url($bannerPath . '/' . $bannerFileName);
-        $category->banner = $this->siteUrl . $bannerUrl;
-    }
+        if ($request->hasFile('banner')) {
+            $bannerFile = $request->file('banner');
+            $bannerPath = 'public/bannerCategory';
+            $bannerFileName = $bannerFile->getClientOriginalName();
+            $bannerFile->storeAs($bannerPath, $bannerFileName);
+            $bannerUrl = Storage::url($bannerPath . '/' . $bannerFileName);
+            $category->banner = $this->siteUrl . $bannerUrl;
+        }
 
 
         if ($category->save()) {
@@ -147,20 +147,20 @@ class ProductCategoryController extends Controller
 
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
-        $path = $file->store('public/photoCategory');
-        $photoUrl = Storage::url($path);
-        $photoUrl = str_replace('public/', 'public/', $photoUrl);
-        $category->photo = $this->siteUrl  . $photoUrl;
-}
+            $path = $file->store('public/photoCategory');
+            $photoUrl = Storage::url($path);
+            $photoUrl = str_replace('public/', 'public/', $photoUrl);
+            $category->photo = $this->siteUrl  . $photoUrl;
+        }
         // Save banner file to storage
-    if ($request->hasFile('banner')) {
-        $bannerFile = $request->file('banner');
-        $bannerPath = 'public/bannerCategory';
-        $bannerFileName = $bannerFile->getClientOriginalName();
-        $bannerFile->storeAs($bannerPath, $bannerFileName);
-        $bannerUrl = Storage::url($bannerPath . '/' . $bannerFileName);
-        $category->banner = $this->siteUrl . $bannerUrl;
-    }
+        if ($request->hasFile('banner')) {
+            $bannerFile = $request->file('banner');
+            $bannerPath = 'public/bannerCategory';
+            $bannerFileName = $bannerFile->getClientOriginalName();
+            $bannerFile->storeAs($bannerPath, $bannerFileName);
+            $bannerUrl = Storage::url($bannerPath . '/' . $bannerFileName);
+            $category->banner = $this->siteUrl . $bannerUrl;
+        }
 
 
 

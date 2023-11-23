@@ -15,7 +15,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Relations\HasMany; 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -98,32 +98,30 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wishlist::class, 'users_id');
     }
-    
-     public function selectedProduct()
+
+    public function selectedProduct()
     {
         return $this->hasMany(SelectedProduct::class, 'users_id');
     }
-    
+
     public function user_addresses(): HasMany
     {
         return $this->hasMany(UserAddress::class);
     }
-    
+
     public function hasVerifiedEmailAtTime($time)
     {
         return $this->email_verified_at && $this->email_verified_at->lt($time);
     }
-    
-     public function followers()
+
+    public function followers()
     {
         return $this->belongsToMany(Store::class, 'user_store_followers', 'user_id', 'store_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
-    
-     public function registeredEvents()
+
+    public function registeredEvents()
     {
         return $this->belongsToMany(Event::class, 'user_event', 'user_id', 'event_id');
     }
-
-  
 }

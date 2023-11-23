@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReviewStoreUser extends Model
 {
-    protected $fillable = ['review', 'user_id', 'store_id','review_id'];
-    
+    protected $fillable = ['review', 'user_id', 'store_id', 'review_id'];
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -22,7 +22,7 @@ class ReviewStoreUser extends Model
     {
         return $this->belongsTo(Store::class);
     }
-    
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

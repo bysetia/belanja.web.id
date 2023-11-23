@@ -31,11 +31,11 @@ class EventGalleryController extends Controller
                 ->editColumn('url', function ($item) {
                     return '<img style="max-width: 150px;" src="' . $item->url . '"/>';
                 })
-                
+
                 ->rawColumns(['action', 'url'])
                 ->make();
+        }
     }
-}
 
     /**
      * Show the form for creating a new resource.

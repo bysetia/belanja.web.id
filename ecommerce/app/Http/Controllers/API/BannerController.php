@@ -11,13 +11,13 @@ use App\Helpers\ResponseFormatter;
 
 class BannerController extends Controller
 {
-        public function index()
+    public function index()
     {
         $banners = Banner::all();
         return ResponseFormatter::success($banners, 'Banners retrieved successfully');
     }
 
-       public function show($id)
+    public function show($id)
     {
         $banner = Banner::find($id);
         if ($banner) {
@@ -26,54 +26,54 @@ class BannerController extends Controller
             return ResponseFormatter::error(null, 'Banner not found', 404);
         }
     }
-    
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'image' => 'required|image',
         ]);
-    
+
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-    
-        $baseUrl = 'https://belanja.penuhmakna.co.id/';
-    
+
+        $baseUrl = 'http://belanja.web.test/';
+
         $imagePath = $request->file('image')->store('public/bannerPromo');
         $imageUrl = $baseUrl . 'ecommerce/storage/app/' . $imagePath;
-    
+
         $banner = Banner::create([
             'image' => $imageUrl,
         ]);
-    
+
         return ResponseFormatter::success(['id' => $banner->id] + $banner->toArray(), 'Banner created successfully', 201);
     }
-    
+
     public function update(Request $request, $id)
     {
-         $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'image' => 'nullable|image',
         ]);
-    
+
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-    
+
         $banner = Banner::find($id);
         if (!$banner) {
             return ResponseFormatter::error(null, 'Banner not found', 404);
         }
-    
-        $baseUrl = 'https://belanja.penuhmakna.co.id/';
-    
+
+        $baseUrl = 'http://belanja.web.test/';
+
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('public/bannerPromo');
             $imageUrl = $baseUrl . 'ecommerce/storage/app/' . $imagePath;
             $banner->image = $imageUrl;
         }
-    
+
         $banner->save();
-    
+
         return ResponseFormatter::success(['id' => $banner->id] + $banner->toArray(), 'Banner updated successfully');
     }
 

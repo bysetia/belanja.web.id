@@ -43,7 +43,7 @@ class UserController extends Controller
                 ->addColumn('profile_photo_path', function ($item) {
                     $imagePath = $item->profile_photo_path ? asset($item->profile_photo_path) : asset($item->profile_photo_url);
                     return '<div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-                                <img src="' . $imagePath .'" width="50" height="50" style="object-fit: cover;">
+                                <img src="' . $imagePath . '" width="50" height="50" style="object-fit: cover;">
                             </div>';
                 })
                 ->rawColumns(['action', 'profile_photo_path'])
@@ -126,8 +126,8 @@ class UserController extends Controller
 
         return redirect()->route('dashboard.user.index');
     }
-    
-       public function showResetPasswordForm(User $user)
+
+    public function showResetPasswordForm(User $user)
     {
         return view('pages.dashboard.user.reset-password', compact('user'));
     }

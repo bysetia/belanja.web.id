@@ -60,7 +60,7 @@ class Store extends Model
     {
         return $this->belongsTo(User::class);
     }
-     public function reviews()
+    public function reviews()
     {
         return $this->hasMany(Review::class);
     }
@@ -68,7 +68,7 @@ class Store extends Model
     {
         return $this->hasMany(ReviewStoreUser::class);
     }
-    
+
     public function products()
     {
         return $this->hasMany(Product::class);
@@ -77,18 +77,18 @@ class Store extends Model
     {
         return $this->belongsToMany(User::class, 'user_store_followers', 'store_id', 'user_id');
     }
-    
+
     public function selectCouriers()
     {
         return $this->belongsToMany(SelectCourier::class, 'select_courier', 'store_id', 'courier_id')
             ->withPivot('store_id', 'courier_id');
     }
-     public function selectCourierss()
+    public function selectCourierss()
     {
         return $this->hasMany(SelectCourier::class);
     }
-    
-     public function city()
+
+    public function city()
     {
         return $this->belongsTo(City::class, 'city_id', 'title');
     }

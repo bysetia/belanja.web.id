@@ -87,7 +87,7 @@ class UserController extends Controller
 
     public function fetch(Request $request)
     {
-          // Ambil data user berserta relasi store dan user_addresses
+        // Ambil data user berserta relasi store dan user_addresses
         $user = $request->user()->load(['store', 'user_addresses']);
 
         // Tambahkan data alamat pengiriman terkait dalam struktur respons
@@ -133,42 +133,42 @@ class UserController extends Controller
     public function updatePhoto(Request $request)
     {
         // Mendapatkan base URL dari environment
-            $baseUrl = 'https://belanja.penuhmakna.co.id';
-            
-            //validasi dibutuhkan file bertipe image maksimal 4mb
-            $validator = Validator::make($request->all(), [
-                'file' => 'required|image|max:4000'
-            ]);
-    
-            //jika validatornya gagal
-            if ($validator->fails()) {
-                return ResponseFormatter::error(
-                    ['error' => $validator->errors()],
-                    'Update photo fails',
-                    401
-                );
-            }
-    
-            //jika validatornya berhasil -> cek file ada atau tidak
-            if ($request->file('file')) {
-                //proses upload
-                $file = $request->file->store('assets/user', 'public');
-                
-                // Dapatkan URL lengkap berdasarkan file yang diunggah
-                $url = $baseUrl . '/ecommerce/storage/app/public/' . $file;
+        $baseUrl = 'http://belanja.web.test/';
 
-              
-    
-                //simpan foto ke database (urlnya)
-                $user = Auth::user();
-                $user->profile_photo_path = $url;
-                $user->update();
-    
-               // Menggunakan ResponseFormatter untuk menghasilkan respons
-                 return ResponseFormatter::success([
-                    "file" => $url
-                ], 'File successfully uploaded');
-            }
+        //validasi dibutuhkan file bertipe image maksimal 4mb
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|image|max:4000'
+        ]);
+
+        //jika validatornya gagal
+        if ($validator->fails()) {
+            return ResponseFormatter::error(
+                ['error' => $validator->errors()],
+                'Update photo fails',
+                401
+            );
+        }
+
+        //jika validatornya berhasil -> cek file ada atau tidak
+        if ($request->file('file')) {
+            //proses upload
+            $file = $request->file->store('assets/user', 'public');
+
+            // Dapatkan URL lengkap berdasarkan file yang diunggah
+            $url = $baseUrl . '/ecommerce/storage/app/public/' . $file;
+
+
+
+            //simpan foto ke database (urlnya)
+            $user = Auth::user();
+            $user->profile_photo_path = $url;
+            $user->update();
+
+            // Menggunakan ResponseFormatter untuk menghasilkan respons
+            return ResponseFormatter::success([
+                "file" => $url
+            ], 'File successfully uploaded');
+        }
     }
     public function googleRedirect()
     {
@@ -211,7 +211,7 @@ class UserController extends Controller
             ], 'Authentication Failed', 500);
         }
     }
-    
+
     public function verifyEmail(Request $request, $id, $hash)
     {
         $user = \App\Models\User::findOrFail($id);
@@ -232,7 +232,7 @@ class UserController extends Controller
             event(new Verified($user));
         }
 
-         return view('verification-email-success');
+        return view('verification-email-success');
 
         // Redirect to home page after successful verification
         // return redirect()->route('home');
@@ -257,7 +257,7 @@ class UserController extends Controller
         // Generate ulang verification_url dengan hash
         $expirationTime = Carbon::now()->addMinutes(15);
         $verificationToken = sha1($user->getEmailForVerification());
-        $verificationUrl = 'https://belanja.penuhmakna.co.id/public/api/email/verify/' . $user->getKey() . '/' . $verificationToken . '?expires=' . $expirationTime->timestamp;
+        $verificationUrl = 'http://belanja.web.test/public/api/email/verify/' . $user->getKey() . '/' . $verificationToken . '?expires=' . $expirationTime->timestamp;
 
         // Kirim ulang email verifikasi
         Mail::to($user->email)->send(new SendEmail($verificationUrl));
@@ -296,7 +296,7 @@ class UserController extends Controller
             'reset_password_created_at' => now(),
         ]);
 
-        $resetPasswordUrl = 'https://belanja.penuhmakna.co.id/public/edit-password?email=' . urlencode($user->email) . '&token=' . urlencode($resetToken);
+        $resetPasswordUrl = 'http://belanja.web.test/public/edit-password?email=' . urlencode($user->email) . '&token=' . urlencode($resetToken);
 
         Mail::to($user->email)->send(new ForgotPasswordEmail($resetPasswordUrl));
 
@@ -354,8 +354,7 @@ class UserController extends Controller
             'reset_password_created_at' => null,
         ]);
 
-    return redirect()->route('reset-password-success')->with('success', 'Password has been successfully reset.');
-
+        return redirect()->route('reset-password-success')->with('success', 'Password has been successfully reset.');
     }
 
 

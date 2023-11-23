@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-        private function getCityIdByRegencyName($regencyName)
+    private function getCityIdByRegencyName($regencyName)
     {
         $city = City::where('title', $regencyName)->first();
-    
+
         if ($city) {
             return $city->city_id;
         } else {
@@ -40,17 +40,17 @@ class ProductController extends Controller
         $user_id = $request->input('user_id');
         $store_id = $request->input('store_id');
         $rate = $request->input('rate');
-        
-    
+
+
         if ($id) {
             $product = Product::with(['category', 'user', 'store',])->find($id);
             // $product = Product::with(['category', 'galleries', 'user', 'store'])->find($id);
             // $product = Product::with(['category:id', 'galleries:id', 'user:id'])->find($id);
-    
-    
+
+
             if ($product) {
-                $product->picturePath = 'https://belanja.penuhmakna.co.id/' . $product->picturePath;
-    
+                $product->picturePath = 'http://belanja.web.test/' . $product->picturePath;
+
                 return ResponseFormatter::success(
                     $product,
                     'Product data retrieved successfully'
@@ -63,89 +63,88 @@ class ProductController extends Controller
                 );
             }
         }
-    
+
         $productQuery = Product::with(['category', 'user', 'store']);
         // $productQuery = Product::with(['category', 'galleries', 'user', 'store']);
         // $productQuery = Product::with(['category:id', 'galleries:id', 'user:id']);
-    
+
         if ($name) {
             $productQuery->where('name', 'like', '%' . $name . '%');
         }
-    
+
         if ($description) {
             $productQuery->where('description', 'like', '%' . $description . '%');
         }
-    
+
         if ($price_from) {
             $productQuery->where('price', '>=', $price_from);
         }
-    
+
         if ($price_to) {
             $productQuery->where('price', '<=', $price_to);
         }
-    
+
         if ($rate_from) {
             $productQuery->where('rate', '>=', $rate_from);
         }
-    
+
         if ($rate_to) {
             $productQuery->where('rate', '<=', $rate_to);
         }
-    
+
         if ($category_id) {
             $productQuery->where('category_id', $category_id);
         }
-    
+
         if ($user_id) {
             $productQuery->where('user_id', $user_id);
         }
-        
+
         if ($store_id) {
             $productQuery->where('store_id', $store_id); // Filter berdasarkan store_id
         }
-        
-         if ($rate) {
+
+        if ($rate) {
             $productQuery->where('rate', $rate); // Filter berdasarkan store_id
         }
-         
-        
+
+
         // $paginator = $productQuery->paginate($limit);
-    
+
         // $products = $paginator->getCollection();
-            $productQuery->latest();
-        
-         $products = $productQuery->get();
-        
+        $productQuery->latest();
+
+        $products = $productQuery->get();
+
         $response = [];
-        
+
         foreach ($products as $product) {
             $storeId = $product->store_id;
             $store = Store::find($storeId);
-            
+
             if ($store) {
                 $productData = $product->toArray(); // Convert the product object to an array
-        
+
                 $regencyName = $store->regencies;
                 $cityId = $this->getCityIdByRegencyName($regencyName);
-        
+
                 $productData['store'] = $store->toArray(); // Convert the store object to an array
                 $productData['store']['city_id'] = $cityId; // Set the city_id value
-                
+
                 $reviewCount = $product->reviews()->count();
                 $productData['review'] = $reviewCount;
-                
-                $averageRating = $product->reviews()->avg('rate'); 
-                $productData['average_rating'] = $averageRating; 
+
+                $averageRating = $product->reviews()->avg('rate');
+                $productData['average_rating'] = $averageRating;
                 $response[] = $productData; // Add the product data to the response data
             }
         }
-        
+
         return ResponseFormatter::success(
             $response,
             'Product list data successfully retrieved'
         );
-
-}
+    }
 
     public function postProduct(Request $request)
     {
@@ -161,13 +160,13 @@ class ProductController extends Controller
             'photo2' => 'nullable|image',
             'photo3' => 'nullable|image',
             'photo4' => 'nullable|image',
-            
+
         ]);
-    
+
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-    
+
         $product = new Product();
         $product->name = $request->input('name');
         $product->description = $request->input('description');
@@ -182,7 +181,7 @@ class ProductController extends Controller
         $product->category_id = $request->input('category_id');
         $product->user_id = auth()->user()->id;
         $product->store_id = Auth::user()->store->id;
-    
+
         if ($product->save()) {
             if ($request->hasFile('picturePath')) {
                 $file = $request->file('picturePath');
@@ -192,9 +191,9 @@ class ProductController extends Controller
                 $product->picturePath = $picturePath; // Simpan URL lengkap
                 $product->save();
             }
-            
+
             if ($request->hasFile('photo1')) {
-                 $file = $request->file('photo1');
+                $file = $request->file('photo1');
                 $path = $file->store('public/pictures');
                 $path = str_replace('public/', '', $path);
                 $picturePath = config('app.url') . '/ecommerce/storage/app/public/' . $path;
@@ -225,14 +224,14 @@ class ProductController extends Controller
                 $product->photo4 = $picturePath; // Simpan URL lengkap
                 $product->save();
             }
-    
+
             $product->refresh();
             return ResponseFormatter::success($product, 'Product added successfully');
         } else {
             return ResponseFormatter::error(null, 'Product failed to add', 500);
         }
     }
-    
+
     public function editProduct(Request $request, $id)
     {
         $product = Product::find($id);
@@ -243,15 +242,15 @@ class ProductController extends Controller
                 404
             );
         }
-    
+
         if (!auth()->check()) {
             return ResponseFormatter::error(null, 'Unauthorized', 401);
         }
-    
+
         // if ($product->user_id !== auth()->user()->id) {
         //     return ResponseFormatter::error(null, 'You do not have permission to edit this product', 403);
         // }
-    
+
         $validator = Validator::make($request->all(), [
             'name' => 'string',
             'description' => 'string',
@@ -265,24 +264,24 @@ class ProductController extends Controller
             'photo3' => 'nullable|image',
             'photo4' => 'nullable|image',
         ]);
-    
+
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-    
+
         $product->fill($request->all());
-    
+
         if ($product->save()) {
             if ($request->hasFile('picturePath')) {
-               $file = $request->file('picturePath');
+                $file = $request->file('picturePath');
                 $path = $file->store('public/picturePath');
                 $path = str_replace('public/', '', $path);
                 $picturePath = config('app.url') . '/ecommerce/storage/app/public/' . $path;
                 $product->picturePath = $picturePath; // Simpan URL lengkap
                 $product->save();
             }
-             if ($request->hasFile('photo1')) {
-                 $file = $request->file('photo1');
+            if ($request->hasFile('photo1')) {
+                $file = $request->file('photo1');
                 $path = $file->store('public/pictures');
                 $path = str_replace('public/', '', $path);
                 $picturePath = config('app.url') . '/ecommerce/storage/app/public/' . $path;
@@ -313,21 +312,21 @@ class ProductController extends Controller
                 $product->photo4 = $picturePath; // Simpan URL lengkap
                 $product->save();
             }
-    
+
             return ResponseFormatter::success($product, 'Product updated successfully');
         } else {
             return ResponseFormatter::error(null, 'Product failed to update', 500);
         }
     }
-    
-    
-        public function updatePhoto(Request $request, $id)
+
+
+    public function updatePhoto(Request $request, $id)
     {
         // Validasi, diperlukan file dengan tipe image
         $validator = Validator::make($request->all(), [
             'picturePath' => 'required|image'
         ]);
-    
+
         // Jika validasi gagal
         if ($validator->fails()) {
             return ResponseFormatter::error(
@@ -336,16 +335,16 @@ class ProductController extends Controller
                 401
             );
         }
-    
+
         // Jika validasi berhasil -> cek apakah ada file yang diunggah
         if ($request->hasFile('picturePath')) {
             // Mengambil file gambar dari permintaan (request)
             $file = $request->file('picturePath');
-    
+
             // Simpan foto ke direktori public/picturePath
             $directory = 'public/picturePath';
             $picturePath = $file->store($directory);
-    
+
             // Cek apakah file berhasil diunggah
             if (!$picturePath) {
                 return ResponseFormatter::error(
@@ -354,13 +353,13 @@ class ProductController extends Controller
                     500
                 );
             }
-    
-         
+
+
             // Dapatkan URL lengkap dengan menggabungkan URL situs dan jalur file
             $fullPicturePath = config('app.url') . 'ecommerce/storage/app/' . $picturePath;
-    
-    
-    
+
+
+
             // Simpan foto ke database (URL-nya)
             $product = Product::find($id);
             if (!$product) {
@@ -372,46 +371,46 @@ class ProductController extends Controller
             }
             $product->picturePath =  $fullPicturePath;
             $product->save();
-    
+
             // Membuat respons dengan format yang diinginkan
             $response = [
                 'picturePath' =>  $fullPicturePath
             ];
-    
+
             return ResponseFormatter::success([$response], 'File successfully uploaded');
         }
     }
-    
-        public function deleteProduct($id)
-        {
-            // Cari produk berdasarkan ID
-            $product = Product::find($id);
-    
-            // Jika produk tidak ditemukan
-            if (!$product) {
-                return ResponseFormatter::error(
-                    null,
-                    'Product not found',
-                    404
-                );
-            }
-    
-            // Hapus gambar produk jika ada
-            if ($product->picturePath) {
-                Storage::delete($product->picturePath);
-            }
-    
-            // Soft delete produk
-            $product->delete();
-    
-            // Mengembalikan data produk yang dihapus
-            // $product = Product::withTrashed()->find($id);
-            // atau
-            // $products = Product::withTrashed()->get();
-    
-            // Menghapus permanen data produk
-            // $product->forceDelete();
-    
-            return ResponseFormatter::success(null, 'Product deleted successfully');
+
+    public function deleteProduct($id)
+    {
+        // Cari produk berdasarkan ID
+        $product = Product::find($id);
+
+        // Jika produk tidak ditemukan
+        if (!$product) {
+            return ResponseFormatter::error(
+                null,
+                'Product not found',
+                404
+            );
         }
+
+        // Hapus gambar produk jika ada
+        if ($product->picturePath) {
+            Storage::delete($product->picturePath);
+        }
+
+        // Soft delete produk
+        $product->delete();
+
+        // Mengembalikan data produk yang dihapus
+        // $product = Product::withTrashed()->find($id);
+        // atau
+        // $products = Product::withTrashed()->get();
+
+        // Menghapus permanen data produk
+        // $product->forceDelete();
+
+        return ResponseFormatter::success(null, 'Product deleted successfully');
     }
+}

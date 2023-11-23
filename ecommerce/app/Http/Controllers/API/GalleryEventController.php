@@ -56,7 +56,7 @@ class GalleryEventController extends Controller
     {
         if ($id) {
             $gallery = EventGallery::find($id);
-    
+
             if (!$gallery) {
                 return ResponseFormatter::error(
                     null,
@@ -64,12 +64,12 @@ class GalleryEventController extends Controller
                     404
                 );
             }
-    
+
             return ResponseFormatter::success($gallery, 'Gallery found');
         }
-    
+
         $galleries = EventGallery::paginate(6);
-    
+
         if ($galleries->isEmpty()) {
             return ResponseFormatter::error(
                 null,
@@ -77,9 +77,9 @@ class GalleryEventController extends Controller
                 404
             );
         }
-    
+
         $response = $galleries->toArray();
-    
+
         return ResponseFormatter::success($response, 'All photos of the event were successfully taken');
     }
 
@@ -96,20 +96,20 @@ class GalleryEventController extends Controller
 
         return ResponseFormatter::success(null, 'Event photo deleted successfully');
     }
-    
+
     public function editGallery(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'events_id' => 'exists:events,id',
             'image' => 'image',
         ]);
-    
+
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-    
+
         $gallery = EventGallery::find($id);
-    
+
         if (!$gallery) {
             return ResponseFormatter::error(
                 null,
@@ -117,7 +117,7 @@ class GalleryEventController extends Controller
                 404
             );
         }
-    
+
         if ($request->has('events_id')) {
             $event = Event::find($request->input('events_id'));
             if (!$event) {
@@ -129,19 +129,19 @@ class GalleryEventController extends Controller
             }
             $gallery->events_id = $event->id;
         }
-    
+
         if ($request->hasFile('image')) {
             // Delete old image
             Storage::delete($gallery->url);
-    
+
             // Store new image
             $file = $request->file('image');
             $path = $file->store('public/eventImages');
             $gallery->url = $path;
         }
-    
+
         $gallery->save();
-    
+
         $response = $gallery->toArray();
         $response = [
             'id' => $response['id'],
@@ -149,8 +149,7 @@ class GalleryEventController extends Controller
             'created_at' => $response['created_at'],
             'updated_at' => $response['updated_at'],
         ];
-    
+
         return ResponseFormatter::success($response, 'Event photo edited successfully');
     }
-
 }

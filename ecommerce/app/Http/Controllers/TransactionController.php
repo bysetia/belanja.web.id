@@ -29,7 +29,7 @@ class TransactionController extends Controller
                         </a>
                        ';
                 })
-                    ->editColumn('total', function ($item) {
+                ->editColumn('total', function ($item) {
                     return number_format($item->total);
                 })
                 ->editColumn('shipping_cost', function ($item) {
@@ -73,7 +73,7 @@ class TransactionController extends Controller
     {
         if (request()->ajax()) {
             $query = Transaction::with(['product', 'transaction'])->where('id', $transaction->id);
-            
+
             return DataTables::of($query)
                 ->editColumn('product.price', function ($item) {
                     return number_format($item->product->price);

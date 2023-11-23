@@ -23,7 +23,7 @@ class StoreController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-   public function store(Request $request)
+    public function store(Request $request)
     {
         // Validasi input
         $validatedData = $request->validate([
@@ -40,18 +40,18 @@ class StoreController extends Controller
             'name.required' => 'The name field is required.',
             'logo.image' => 'The logo must be an image.',
         ]);
-    
+
         // Proses upload file logo jika ada
         if ($request->hasFile('logo')) {
             // Lakukan proses upload logo
             $logo = $request->file('logo');
             $logoPath = $logo->store('public/logos');
             $logoPath = str_replace('public/', '', $logoPath);
-             $logoUrl = config('app.url') . '/ecommerce/storage/app/public/' . $logoPath;
+            $logoUrl = config('app.url') . '/ecommerce/storage/app/public/' . $logoPath;
         } else {
             $logoUrl = null; // Set logoUrl menjadi null jika logo tidak ada
         }
-    
+
         // Simpan toko baru dengan data logo
         $store = new Store();
         $store->name = $request->input('name');
@@ -64,7 +64,7 @@ class StoreController extends Controller
         $store->zip_code = $request->input('zip_code');
         $store->country = $request->input('country');
         $store->user_id = auth()->user()->id;
-    
+
         if ($store->save()) {
             $store = $store->toArray();
             $store = [
@@ -79,14 +79,14 @@ class StoreController extends Controller
                 'regencies' => $store['regencies'],
                 'zip_code' => $store['zip_code'],
                 'country' => $store['country'],
-                'created_at' => $store['created_at'],   
+                'created_at' => $store['created_at'],
                 'updated_at' => $store['updated_at'],
             ];
-            
+
             // Jika penyimpanan berhasil, ubah peran pengguna menjadi 'seller'
             auth()->user()->roles = 'SELLER';
             auth()->user()->save();
-    
+
             $response = [
                 'meta' => [
                     'code' => 200,
@@ -95,7 +95,7 @@ class StoreController extends Controller
                 ],
                 'data' => $store
             ];
-    
+
             return response()->json($response);
         } else {
             $response = [
@@ -106,7 +106,7 @@ class StoreController extends Controller
                 ],
                 'data' => null
             ];
-    
+
             return response()->json($response, 500);
         }
     }
@@ -115,38 +115,38 @@ class StoreController extends Controller
     {
         $id = $request->input('id');
         $storeName = $request->input('store_name'); // Get the store name from the request
-    
+
         $query = Store::with('user');
-    
+
         if ($storeName) {
             // Add a where clause to filter by store name directly
             $query->where('name', 'like', '%' . $storeName . '%');
         }
-    
+
         if ($id) {
             $query->where('id', $id);
         }
-    
+
         $stores = $query->get();
-    
+
         // Loop through each store and add city_id
         $responseData = [];
         foreach ($stores as $store) {
             $cityId = $this->getCityIdByRegencyName($store->regencies);
-    
+
             $storeData = $store->toArray();
             $storeData['city_id'] = $cityId;
-    
+
             $responseData[] = $storeData;
         }
-    
+
         return ResponseFormatter::success($responseData, 'Data semua toko berhasil diambil');
     }
-    
+
     private function getCityIdByRegencyName($regencyName)
     {
         $city = City::where('title', $regencyName)->first();
-    
+
         if ($city) {
             return $city->city_id;
         } else {
@@ -208,10 +208,10 @@ class StoreController extends Controller
     {
         // Mendapatkan ID pengguna yang sedang login
         $userId = Auth::id();
-    
+
         // Mengambil data toko berdasarkan ID pengguna
         $store = Store::where('user_id', $userId)->first();
-    
+
         if ($store) {
             $response = [
                 'id' => $store->id,
@@ -232,7 +232,7 @@ class StoreController extends Controller
                 'followers' => $store->followers,
                 'rate' => $store->rate,
             ];
-    
+
             return ResponseFormatter::success($response, 'Store data retrieved successfully', 200);
         } else {
             return ResponseFormatter::error(null, 'Store data not found', 404);
@@ -258,8 +258,8 @@ class StoreController extends Controller
 
         return ResponseFormatter::success(null, 'Toko berhasil dihapus');
     }
-    
-     public function addOperatingHours(Request $request, $id)
+
+    public function addOperatingHours(Request $request, $id)
     {
         $store = Store::find($id);
 
@@ -277,7 +277,7 @@ class StoreController extends Controller
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
-        
+
         $existingDays = $store->days->pluck('name')->toArray();
 
         foreach ($request->input('operating_hours') as $operatingHourData) {
@@ -368,13 +368,13 @@ class StoreController extends Controller
     public function getAllOperatingHours(Request $request)
     {
         $store_id = $request->input('store_id');
-    
+
         // Mengambil semua toko beserta relasi hari dan jam operasionalnya
         $stores = Store::with('days')->when($store_id, function ($query) use ($store_id) {
             // Jika $store_id tidak null, maka ambil hanya data toko dengan id yang sesuai
             return $query->where('id', $store_id);
         })->get();
-    
+
         // Format data untuk respons
         $formattedStores = [];
         foreach ($stores as $store) {
@@ -386,116 +386,113 @@ class StoreController extends Controller
                     'close_time' => $day->operational_day->close_time,
                 ];
             }
-    
+
             $formattedStores[] = [
                 'store_id' => $store->id,
                 'store_name' => $store->name,
                 'operating_hours' => $operatingHours,
             ];
         }
-    
+
         return ResponseFormatter::success($formattedStores, 'Data jam operasional semua toko berhasil diambil');
     }
-    
+
     public function addCourier(Request $request, $store_id)
     {
         $store = Store::find($store_id);
-    
+
         if (!$store) {
             return ResponseFormatter::error('Store not found', 404);
         }
-    
+
         $courierIds = $request->input('courier_id');
-    
+
         if (!is_array($courierIds)) {
             $courierIds = [$courierIds];
         }
-    
+
         foreach ($courierIds as $courierId) {
             $request->validate([
                 'courier_id' => 'required|exists:couriers,id',
             ]);
-    
+
             $store->selectCouriers()->attach($courierId);
         }
-    
+
         // Use subquery to get courier data
         $subQuery = SelectCourier::select('courier_id')
             ->where('store_id', $store_id);
-    
+
         $responseData = $store->toArray();
         $responseData['couriers'] = Courier::whereIn('id', $subQuery)->get()->toArray();
-    
+
         return ResponseFormatter::success($responseData, 'Store courier added successfully');
     }
 
-    
+
     public function removeCourier($store_id, Request $request)
     {
         $store = Store::find($store_id);
-    
+
         if (!$store) {
             return ResponseFormatter::error('Store not found', 404);
         }
-    
+
         $courierName = $request->input('courier_name');
-    
+
         // Cari data kurir berdasarkan nama
         $courier = Courier::where('title', $courierName)->first();
-    
+
         if (!$courier) {
             return ResponseFormatter::error('Courier not found', 404);
         }
-    
+
         // Hapus relasi kurir dari toko
         $store->selectCouriers()->detach($courier->id);
-    
+
         return ResponseFormatter::success($store, 'Courier removed from store successfully');
     }
-    
+
     public function getSelectedCourier($store_id)
     {
         $store = Store::find($store_id);
-    
+
         if (!$store) {
             return ResponseFormatter::error('Store not found', 404);
         }
-    
+
         // Gunakan subquery untuk mengambil daftar courier_id dari tabel select_courier
         $subQuery = SelectCourier::select('courier_id')
             ->where('store_id', $store_id);
-    
+
         // Ambil data kurir dari tabel couriers yang sesuai dengan subquery
         $selectedCourier = Courier::whereIn('id', $subQuery)->get();
-    
+
         if ($selectedCourier->isEmpty()) {
             return ResponseFormatter::error('Selected courier not found', 404);
         }
-    
+
         return ResponseFormatter::success($selectedCourier, 'Selected courier retrieved successfully');
     }
 
-    
+
     public function updateCourier(Request $request, $store_id)
     {
         $store = Store::find($store_id);
-    
+
         if (!$store) {
             return ResponseFormatter::error('Store not found', 404);
         }
-    
+
         $request->validate([
             'courier_id' => 'required|exists:couriers,id',
         ]);
-    
+
         $store->selectCourier()->updateOrCreate(
             ['store_id' => $store->id],
             ['courier_id' => $request->courier_id]
         );
-    
+
         return ResponseFormatter::success($store, 'Store courier updated successfully');
     }
-
-
-
 }

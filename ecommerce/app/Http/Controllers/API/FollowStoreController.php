@@ -11,7 +11,7 @@ use App\Helpers\ResponseFormatter;
 
 class FollowStoreController extends Controller
 {
- public function followStore(Request $request, $storeId)
+    public function followStore(Request $request, $storeId)
     {
         $store = Store::findOrFail($storeId);
 
@@ -52,7 +52,7 @@ class FollowStoreController extends Controller
         return ResponseFormatter::success($responseData, 'Berhasil mengikuti toko', 200);
     }
 
-     public function unfollowStore(Request $request, $storeId)
+    public function unfollowStore(Request $request, $storeId)
     {
         $store = Store::findOrFail($storeId);
 
@@ -83,5 +83,4 @@ class FollowStoreController extends Controller
 
         return ResponseFormatter::error(null, 'Anda belum mengikuti toko ini', 400);
     }
-
 }

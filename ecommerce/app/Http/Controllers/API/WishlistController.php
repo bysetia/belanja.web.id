@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
-   public function addToWishlist(Request $request)
+    public function addToWishlist(Request $request)
     {
         $productId = $request->input('product_id');
         $product = Product::findOrFail($productId);
@@ -77,9 +77,9 @@ class WishlistController extends Controller
     {
         $user = Auth::user();
         $wishlist = $user->wishlist()->latest()->get();
-    
+
         $wishlist->load('product'); // Mengambil informasi produk terkait
-    
+
         return ResponseFormatter::success($wishlist, "Wishlist retrieved successfully");
     }
 }

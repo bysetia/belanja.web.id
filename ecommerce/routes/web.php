@@ -54,7 +54,6 @@ Route::group(
                 Route::resource('event.gallery', EventGalleryController::class)->shallow()->only([
                     'index', 'create', 'store', 'destroy'
                 ]);
-                
             });
         });
     }

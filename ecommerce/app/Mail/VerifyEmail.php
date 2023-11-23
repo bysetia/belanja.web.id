@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Mail;
 
 use App\Models\User;
@@ -34,6 +35,6 @@ class VerifyEmail extends Mailable
     public function build()
     {
         return $this->subject('Verify Your Email')
-                    ->view('emails.verify_email');
+            ->view('emails.verify_email');
     }
 }

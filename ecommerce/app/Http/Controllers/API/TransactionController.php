@@ -25,7 +25,7 @@ use App\Models\UserAddress;
 
 class TransactionController extends Controller
 {
-   
+
     public function all(Request $request)
     {
         $id = $request->input('id');
@@ -33,55 +33,55 @@ class TransactionController extends Controller
         $status = $request->input('status');
         $store_id = $request->input('store_id');
         $user_id = $request->input('user_id'); // Ambil user_id dari permintaan
-    
+
         $transactions = Transaction::with(['product', 'user', 'user.user_addresses' => function ($query) {
             $query->where('is_primary', 1)->limit(1);
         }, 'courier', 'product.store']); // Include the 'store' relationship on the 'product'
-    
+
         if ($id) {
             $transactions->where('id', $id);
         }
-    
+
         if ($user_id) {
             $transactions->where('users_id', $user_id);
         }
-    
+
         if ($store_id) {
             $transactions->whereHas('product', function ($query) use ($store_id) {
                 $query->where('store_id', $store_id);
             });
         }
-    
+
         if ($product_id) {
             $transactions->where('products_id', $product_id);
         }
-    
+
         if ($status) {
             $transactions->where('status', $status);
         }
-    
+
         $transactions->latest();
         $transactions = $transactions->get();
-    
+
         $formattedTransactions = $transactions->map(function ($transaction) {
             $transaction['created_at'] = Carbon::parse($transaction['created_at'])->format('Y-m-d H:i');
-    
+
             if ($transaction->user_address_id) {
                 $userAddress = UserAddress::where('id', $transaction->user_address_id)->first();
                 $transaction['user_address'] = $userAddress;
             } else {
                 $transaction['user_address'] = null;
             }
-    
+
             return $transaction;
         });
-    
+
         return ResponseFormatter::success(
             $formattedTransactions,
             'Transaction data successfully retrieved'
         );
     }
-    
+
     public function checkout(Request $request)
     {
         $request->validate([
@@ -100,50 +100,50 @@ class TransactionController extends Controller
             'courier' => 'required|array|min:1',
             'courier.*' => 'required|in:jne,pos,tiki',
         ]);
-    
+
         $user = Auth::user();
         $userAddress = $user->user_addresses->where('is_primary', 1)->first();
-    
+
         if (!$userAddress) {
             return ResponseFormatter::error('User does not have a primary address', 400);
         }
-    
+
         $transactions = [];
         $total = $request->total; // Use the provided total from the request
-    
+
         foreach ($request->product_id as $index => $product_id) {
             $product = Product::find($product_id);
-    
+
             if ($product->quantity <= 0) {
                 return ResponseFormatter::error('Product with ID ' . $product_id . ' is out of stock.', 400);
             }
-    
+
             if ($request->quantity[$index] > $product->quantity) {
                 return ResponseFormatter::error('Product with ID ' . $product_id . ' does not have enough stock.', 400);
             }
-    
+
             $shippingCost = $this->calculateShippingCost(
                 $request->origin_city_id,
                 $request->destination_city_id,
                 $request->weight[$index],
                 $request->courier[$index]
             );
-    
+
             if ($shippingCost === false) {
                 return ResponseFormatter::error('Failed to get shipping cost information', 500);
             }
-    
+
             Cart::where('users_id', Auth::user()->id)
                 ->where('products_id', $product_id)
                 ->delete();
-    
+
             $selectedCourier = $request->courier[$index];
-    
+
             $newTransaction = Transaction::create([
                 'users_id' => Auth::user()->id,
                 'products_id' => $product_id,
-                'product_name' => $product->name,  
-                'product_price' => $product->price, 
+                'product_name' => $product->name,
+                'product_price' => $product->price,
                 'quantity' => $request->quantity[$index],
                 'status' => $request->status,
                 'payment_url' => '',
@@ -151,17 +151,17 @@ class TransactionController extends Controller
                 'courier' => $selectedCourier,
                 'user_address_id' => $userAddress->id,
             ]);
-    
+
             $product->increment('sold_quantity', $request->quantity[$index]);
             $product->decrement('quantity', $request->quantity[$index]);
-    
+
             $transactionData = [
                 'id' => $newTransaction->id,
                 'users_id' => $newTransaction->users_id,
                 'quantity' => $newTransaction->quantity,
                 'user_address' => $userAddress,
             ];
-    
+
             $transactionData['product'] = [
                 'id' => $product->id,
                 'price' => $product->price,
@@ -170,43 +170,43 @@ class TransactionController extends Controller
                 'product_name' => $product->name,
                 'product_price' => $product->price,
             ];
-    
+
             $store = Store::find($product->store_id);
-    
+
             $transactionData['shipping_cost'] = $shippingCost;
-    
+
             $transactions[] = $transactionData;
-    
+
             Transaction::where('id', $transactions[$index]['id'])->update(['shipping_cost' => $shippingCost]);
         }
-    
+
         // Calculate total saldo to be added to store
         $totalStoreSaldo = $total;
-    
+
         // Update store's saldo
         if ($store) {
             $store->saldo += $totalStoreSaldo;
             $store->save();
         }
-    
+
         foreach ($transactions as $index => $transaction) {
             Transaction::where('id', $transaction['id'])->update(['total' => $total]);
         }
-    
+
         $firstTransactionId = $transactions[0]['id'];
         $firstTransactionObj = Transaction::find($firstTransactionId);
-    
+
         $paymentUrl = $this->generatePaymentUrl($firstTransactionObj);
-    
+
         if (!$paymentUrl) {
             return ResponseFormatter::error('Failed to get payment URL', 500);
         }
-    
+
         Config::$serverKey = config('services.midtrans.serverKey');
         Config::$isProduction = config('services.midtrans.isProduction');
         Config::$isSanitized = config('services.midtrans.isSanitized');
         Config::$is3ds = config('services.midtrans.is3ds');
-    
+
         $transactionData = [
             'transaction_details' => [
                 'order_id' => $firstTransactionObj->id,
@@ -216,7 +216,7 @@ class TransactionController extends Controller
                 'first_name' => Auth::user()->name,
                 'email' => Auth::user()->email,
                 'phone' => Auth::user()->phone,
-                    'billing_address' => [
+                'billing_address' => [
                     'first_name' => $userAddress->first_name,
                     'last_name' => $userAddress->last_name,
                     'address' => $userAddress->address,
@@ -224,27 +224,27 @@ class TransactionController extends Controller
                     'postal_code' => $userAddress->postal_code,
                     'phone' => $userAddress->phone,
                     'country_code' => $userAddress->country_code,
-        ],
+                ],
             ],
             'item_details' => [],
         ];
-    
+
         foreach ($transactions as $transaction) {
-            $product = Product::find($transaction['product']['id']); 
+            $product = Product::find($transaction['product']['id']);
             $user = User::find($transaction['users_id']);
-    
+
             if (is_object($product) && property_exists($product, 'store_id')) {
                 $store = Store::find($product->store_id);
             } else {
                 $store = null;
             }
-    
+
             $userDetails = [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
             ];
-    
+
             $productTotal = $product['price'] * $product['quantity'];
             $totalWithShipping = $productTotal + $transaction['shipping_cost'];
             $courier = Courier::find($selectedCourier);
@@ -255,7 +255,7 @@ class TransactionController extends Controller
                 'price' => $product['price'],
                 'quantity' => $product['quantity'],
                 'name' => $product['name'],
-                'product_name' => $product['name'], 
+                'product_name' => $product['name'],
                 'product_price' => $product['price'],
                 'total' => $productTotal,
                 'shipping_cost' => $transaction['shipping_cost'],
@@ -269,17 +269,17 @@ class TransactionController extends Controller
                     'logo' => $courier->logo,
                 ] : null,
             ];
-    
+
             $itemDetail['product_total'] = $productTotal;
             $transactionData['item_details'][] = $itemDetail;
         }
-    
+
         try {
             $snapToken = Snap::getSnapToken($transactionData);
         } catch (Exception $e) {
             return ResponseFormatter::error('Failed to get Snap token', 500);
         }
-    
+
         foreach ($transactions as $index => $transaction) {
             Transaction::where('id', $transaction['id'])->update([
                 'payment_url' => $paymentUrl,
@@ -287,7 +287,7 @@ class TransactionController extends Controller
                 'status' => 'PENDING',
             ]);
         }
-        
+
         // Handle Midtrans callback
         // $this->handleMidtransCallback($request, $transactions);
 
@@ -300,9 +300,9 @@ class TransactionController extends Controller
                 'status' => 'PENDING',
             ],
         ];
-    
+
         $firstTransactionObj->save();
-    
+
         // Return the response
         return response()->json([
             'meta' => [
@@ -313,25 +313,25 @@ class TransactionController extends Controller
             'data' => $response,
         ]);
     }
-    
+
     public function callback(Request $request)
     {
         Config::$serverKey = config('services.midtrans.serverKey');
         Config::$isProduction = config('services.midtrans.isProduction');
         Config::$isSanitized = config('services.midtrans.isSanitized');
         Config::$is3ds = config('services.midtrans.is3ds');
-        
+
         $notification = new Notification();
-    
+
         // Mengambil data notifikasi dari $request
         $status = $notification->transaction_status;
         $payment_type = $notification->payment_type;
         $fraud = $notification->fraud_status;
         $order_id = $notification->order_id;
-    
+
         // Cari transaksi berdasarkan order_id
         $transaction = Transaction::findOrFail($order_id);
-    
+
         if ($status == 'capture') {
             if ($payment_type == 'credit_card') {
                 if ($fraud == 'challenge') {
@@ -341,16 +341,16 @@ class TransactionController extends Controller
                 }
             }
         } elseif ($status == 'settlement') {
-              if ($transaction->status == 'SHIPPED') {
+            if ($transaction->status == 'SHIPPED') {
                 $transaction->status = 'SHIPPED';
             } else {
                 $transaction->status = 'PROCESSED';
             }
-        
+
             // Check if the settlement date is more than 3 days ago
             $settlementTime = Carbon::parse($transaction->settlement_time); // Convert to Carbon instance
             $deadline = Carbon::now()->subDays(3); // Calculate the deadline (3 days ago)
-        
+
             if ($settlementTime->lt($deadline)) {
                 $transaction->status = 'CANCELLED';
             }
@@ -363,14 +363,14 @@ class TransactionController extends Controller
         } elseif ($status == 'cancel') {
             $transaction->status = 'CANCELLED';
         }
-        
+
         $transaction->save();
-    
+
         // Kirim respons JSON sesuai kebutuhan
         return response()->json(['message' => 'Callback diterima dan diproses']);
     }
 
-    
+
     public function calculateShippingCost($originCityId, $destinationCityId, $weight, $courier)
     {
         // Panggil API pengiriman eksternal atau layanan lainnya untuk mendapatkan informasi ongkos kirim
@@ -413,12 +413,12 @@ class TransactionController extends Controller
     private function generatePaymentUrl($transaction)
     {
         $user = $transaction->user;
-        
+
         Config::$serverKey = config('services.midtrans.serverKey');
         Config::$isProduction = config('services.midtrans.isProduction');
         Config::$isSanitized = config('services.midtrans.isSanitized');
         Config::$is3ds = config('services.midtrans.is3ds');
-        
+
         $midtrans = [
             'transaction_details' => [
                 'order_id' => $transaction->id,
@@ -437,7 +437,7 @@ class TransactionController extends Controller
             ],
             'vtweb' => [],
         ];
-        
+
         try {
             $paymentUrl = Snap::createTransaction($midtrans)->redirect_url;
             return $paymentUrl;
@@ -454,32 +454,32 @@ class TransactionController extends Controller
 
         return ResponseFormatter::success($transaction, 'Transaction updated successfully');
     }
-    
+
     public function acceptOrder($transactionId)
     {
         // Cari transaksi berdasarkan ID dan sertakan relasi product
-         $transaction = Transaction::with('product')->find($transactionId);
-    
+        $transaction = Transaction::with('product')->find($transactionId);
+
         // Pastikan transaksi ditemukan
         if (!$transaction) {
             return ResponseFormatter::error('Transaction not found.', 404);
         }
-    
+
         // Pastikan status transaksi adalah 'PENDING'
         if ($transaction->status !== 'PROCESSED') {
             return ResponseFormatter::error('Transaction cannot be accepted. Status is not PROCESSED.', 400);
         }
-    
+
         // Ubah status transaksi menjadi 'diproses'
         $transaction->status = 'SHIPPED';
         $transaction->save();
-        
-         // Ambil data produk terkait dengan transaksi
-         $product = $transaction->product;
-    
+
+        // Ambil data produk terkait dengan transaksi
+        $product = $transaction->product;
+
         // Ambil data user terkait dengan transaksi
         $user = $transaction->user;
-    
+
         // Buat data respons dengan format yang diinginkan
         $response = [
             'id' => $transaction->id,
@@ -497,37 +497,37 @@ class TransactionController extends Controller
             'product' => $product, // Isi data produk jika diperlukan
             'user' => $user, // Isi data user terkait dengan transaksi
         ];
-    
+
         return ResponseFormatter::success($response, 'Transaction has been accepted and status is now SHIPPED.');
     }
-    
-    
+
+
     public function markAsShipped($transactionId)
     {
         // Cari transaksi berdasarkan ID dan sertakan relasi product
         $transaction = Transaction::with('product')->find($transactionId);
-    
+
         // Pastikan transaksi ditemukan
         if (!$transaction) {
             return ResponseFormatter::error('Transaction not found.', 404);
         }
-    
+
         // Pastikan status transaksi adalah 'PROCESSED'
         if ($transaction->status !== 'PROCESSED') {
             return ResponseFormatter::error('Transaction cannot be marked as shipped. Status is not PROCESSED.', 400);
         }
-    
+
         // Ubah status transaksi menjadi 'SHIPPED'
         $transaction->status = 'SHIPPED';
         $transaction->save();
-    
+
         // Ambil data produk terkait dengan transaksi
-         $product = $transaction->product;
+        $product = $transaction->product;
         // $product->increment('sold_quantity', $transaction->quantity);
-    
+
         // Ambil data user terkait dengan transaksi
         $user = $transaction->user;
-    
+
         // Buat data respons dengan format yang diinginkan
         $response = [
             'id' => $transaction->id,
@@ -545,35 +545,35 @@ class TransactionController extends Controller
             'product' => $product, // Isi data produk jika diperlukan
             'user' => $user, // Isi data user terkait dengan transaksi
         ];
-    
+
         return ResponseFormatter::success($response, 'Transaction has been marked as SHIPPED.');
     }
-    
+
     public function markAsFinished($transactionId)
     {
         // Find the transaction by ID and include the product relation
         $transaction = Transaction::with('product')->find($transactionId);
-    
+
         // Make sure the transaction is found
         if (!$transaction) {
             return ResponseFormatter::error('Transaction not found.', 404);
         }
-    
+
         // Make sure the transaction status is 'SHIPPED'
         if ($transaction->status !== 'SHIPPED') {
             return ResponseFormatter::error('Transaction cannot be marked as finished. Status is not SHIPPED.', 400);
         }
-    
+
         // Update the transaction status to 'FINISHED'
         $transaction->status = 'FINISHED';
         $transaction->save();
-    
+
         // Get the product data associated with the transaction
         $product = $transaction->product;
-    
+
         // Get the user data associated with the transaction
         $user = $transaction->user;
-    
+
         // Create the response data in the desired format
         $response = [
             'id' => $transaction->id,
@@ -591,7 +591,7 @@ class TransactionController extends Controller
             'product' => $product, // Include product data if needed
             'user' => $user, // Include user data associated with the transaction
         ];
-    
+
         return ResponseFormatter::success($response, 'Transaction has been marked as FINISHED.');
     }
 
@@ -600,7 +600,7 @@ class TransactionController extends Controller
         $baseUrl = config('app.env') === 'production'
             ? 'https://api.midtrans.com'
             : 'https://api.sandbox.midtrans.com';
-    
+
         $authString = base64_encode("SB-Mid-server-ZYcsAfAMrYk0m5KMhgZqBcYl" . ":");
 
         $headers = [
@@ -608,15 +608,15 @@ class TransactionController extends Controller
             'Authorization' => "Basic {$authString}",
             'Content-Type' => 'application/json',
         ];
-    
+
         $response = Http::withHeaders($headers)
             ->get("{$baseUrl}/v2/{$orderId}/status");
-    
+
         $responseData = $response->json();
-    
+
         // Process and format the response data as needed
         // You can use $responseData to display the payment details
-    
+
         return response()->json([
             'meta' => [
                 'code' => $response->status(),

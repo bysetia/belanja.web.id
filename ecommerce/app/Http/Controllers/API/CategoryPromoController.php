@@ -16,7 +16,7 @@ class CategoryPromoController extends Controller
         return ResponseFormatter::success($category_promo, 'Category promo list retrieved successfully');
     }
 
-   
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -105,7 +105,7 @@ class CategoryPromoController extends Controller
         }
     }
 
-  
+
     public function destroy($id)
     {
         $category_promo = CategoryPromo::findOrFail($id);

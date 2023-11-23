@@ -39,16 +39,16 @@ class ProductCategoryController extends Controller
                 ->editColumn('price', function ($item) {
                     return number_format($item->price);
                 })
-                  ->addColumn('photo', function ($item) {
+                ->addColumn('photo', function ($item) {
                     return '<img src="' . $item->photo . '" width="50" height="50">';
                 })
-                   ->addColumn('banner', function ($item) {
+                ->addColumn('banner', function ($item) {
                     return '<img src="' . $item->banner . '" width="100" height="100">';
                 })
                 ->editColumn('created_at', function ($item) {
                     return Carbon::parse($item->created_at)->toDateTimeString();
                 })
-                ->rawColumns(['action', 'photo','banner','created_at'])
+                ->rawColumns(['action', 'photo', 'banner', 'created_at'])
                 ->make();
         }
 
@@ -75,7 +75,7 @@ class ProductCategoryController extends Controller
             // Store the uploaded image in the 'public/photoCategory' disk
             $imagePath = $request->file('photo')->store('photoCategory', 'public');
 
-           // Get the full URL of the stored image
+            // Get the full URL of the stored image
             $imageUrl = config('app.url') . 'ecommerce/storage/app/public/' . $imagePath;
 
 
@@ -122,11 +122,11 @@ class ProductCategoryController extends Controller
     public function update(ProductCategoryRequest $request, ProductCategory $category)
     {
         $data = $request->all();
-          if ($request->hasFile('photo')) {
+        if ($request->hasFile('photo')) {
             // Store the uploaded image in the 'public/photoCategory' disk
             $imagePath = $request->file('photo')->store('photoCategory', 'public');
 
-           // Get the full URL of the stored image
+            // Get the full URL of the stored image
             $imageUrl = config('app.url') . 'ecommerce/storage/app/public/' . $imagePath;
 
 

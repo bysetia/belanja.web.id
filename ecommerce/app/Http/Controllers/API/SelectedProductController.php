@@ -76,10 +76,9 @@ class SelectedProductController extends Controller
     public function getAllSelectedProduct()
     {
         $selectedProducts = SelectedProduct::all();
-    
-        $selectedProducts->load('product'); // Mengambil informasi produk terkait
-        
-        return ResponseFormatter::success($selectedProducts, "Selected products retrieved successfully");
 
+        $selectedProducts->load('product'); // Mengambil informasi produk terkait
+
+        return ResponseFormatter::success($selectedProducts, "Selected products retrieved successfully");
     }
 }

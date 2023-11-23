@@ -14,16 +14,16 @@ class Promo extends Model
     protected $fillable = [
         'start_date', 'end_date', 'product_id', 'after_promo', 'persen_promo', 'status',
     ];
-    
+
 
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-    
+
     public function toArray()
     {
-       $array = parent::toArray();
+        $array = parent::toArray();
 
         // Dapatkan semua atribut dari model Product
         $productAttributes = $this->product->toArray();
@@ -33,10 +33,9 @@ class Promo extends Model
 
         return $array;
     }
-    
+
     public function categoryPromo()
     {
         return $this->belongsTo(CategoryPromo::class);
     }
-
 }

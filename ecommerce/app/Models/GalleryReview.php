@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class GalleryReview extends Model
 {
-      use HasFactory;
+    use HasFactory;
 
     protected $table = 'galleryreviews';
-     protected $fillable = [
+    protected $fillable = [
         'review_id',
         'image_path',
         'image_path_2',

@@ -18,16 +18,16 @@ class UserAddress extends Model
         'zip_code',
         'country',
         'is_primary',
-        'receiver_name', 
-        'phone_number', 
+        'receiver_name',
+        'phone_number',
     ];
 
-      public function user()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    
-    
+
+
     // Set default value for 'is_primary'
     protected $attributes = [
         'is_primary' => 0,
@@ -45,8 +45,8 @@ class UserAddress extends Model
             }
         });
     }
-    
-    
+
+
     public function regency()
     {
         return $this->belongsTo(Regency::class, 'regencies', 'name');

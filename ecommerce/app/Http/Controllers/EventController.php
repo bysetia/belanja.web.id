@@ -22,7 +22,7 @@ class EventController extends Controller
 
             return DataTables::of($query)
                 ->addColumn('action', function ($item) {
-                return '
+                    return '
                  <div class="text-center">
                         <a class="inline-block border border-corn-500 bg-corn-500 text-white rounded-md px-2 py-1 m-1 transition duration-500 ease select-none hover:bg-corn-400 focus:outline-none focus:shadow-outline" 
                             href="' . route('dashboard.event.edit', $item->id) . '"
@@ -42,12 +42,11 @@ class EventController extends Controller
                             </a>
                             </div>
                     ';
-                    
                 })
-                   ->addColumn('poster', function ($item) {
+                ->addColumn('poster', function ($item) {
                     return '<img src="' . $item->poster . '" width="60">';
                 })
-                
+
                 ->rawColumns(['action', 'poster'])
                 ->make();
         }
@@ -68,15 +67,15 @@ class EventController extends Controller
     public function store(EventRequest $request, Event $event)
     {
         $data = $request->all();
-        
+
         if ($request->hasFile('poster')) {
-        $file = $request->file('poster');
-        $path = $file->store('public/eventPosters');
-        $path = str_replace('public/', '', $path);
-        $posterUrl = config('app.url') . '/ecommerce/storage/app/public/' . $path; 
-        
-        $data['poster'] = $posterUrl; 
-    }
+            $file = $request->file('poster');
+            $path = $file->store('public/eventPosters');
+            $path = str_replace('public/', '', $path);
+            $posterUrl = config('app.url') . '/ecommerce/storage/app/public/' . $path;
+
+            $data['poster'] = $posterUrl;
+        }
 
         Event::create($data);
 
@@ -107,14 +106,14 @@ class EventController extends Controller
     public function update(EventRequest $request, Event $event)
     {
         $data = $request->all();
-        
-         if ($request->hasFile('poster')) {
+
+        if ($request->hasFile('poster')) {
             $file = $request->file('poster');
             $path = $file->store('public/eventPosters');
             $path = str_replace('public/', '', $path);
-            $posterUrl = config('app.url') . '/ecommerce/storage/app/public/' . $path; 
-            
-            $data['poster'] = $posterUrl; 
+            $posterUrl = config('app.url') . '/ecommerce/storage/app/public/' . $path;
+
+            $data['poster'] = $posterUrl;
         }
 
         $event->update($data);
@@ -131,20 +130,20 @@ class EventController extends Controller
 
         return redirect()->route('dashboard.event.index');
     }
-    
-     public function registeredEvents(User $user)
+
+    public function registeredEvents(User $user)
     {
         $registeredEvents = $user->registeredEvents()->get();
         dd($registeredEvents);
-    
+
         return view('pages.dashboard.event.registered-events', compact('user', 'registeredEvents'));
     }
-    
+
     public function getRegisteredUsersView(Event $event, Request $request)
     {
         if ($request->ajax()) {
             $registeredUsers = $event->registeredUsers()->get();
-    
+
             return DataTables::of($registeredUsers)
                 ->addColumn('profile_photo_path', function ($user) {
                     return '<img src="' . $user->profile_photo_path . '" alt="Avatar" class="w-10 h-10">';
@@ -152,8 +151,7 @@ class EventController extends Controller
                 ->rawColumns(['profile_photo_path'])
                 ->make();
         }
-    
+
         return view('pages.dashboard.event.registered-events', compact('event'));
     }
-
 }

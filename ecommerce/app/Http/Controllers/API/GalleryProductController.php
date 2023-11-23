@@ -16,7 +16,7 @@ class GalleryProductController extends Controller
         $validator = Validator::make($request->all(), [
             'products_id' => 'required|exists:products,id',
             'url' => 'required|image',
-             // aturan validasi lainnya...
+            // aturan validasi lainnya...
             'selectProduct' => 'nullable|string',
         ]);
 
@@ -36,7 +36,7 @@ class GalleryProductController extends Controller
 
         $file = $request->file('url');
         $path = $file->store('public/gallery');
-        
+
 
 
         $gallery = ProductGallery::create([
@@ -45,10 +45,10 @@ class GalleryProductController extends Controller
             'selectProduct' => $request->input('selectProduct'), // Menyimpan nilai selectProduct dari request
         ]);
         $response = $gallery->toArray();
-       $response = [
+        $response = [
             'id' => $response['id'],
             'url' => $response['url'],
-             'selectProduct' => $response['selectProduct'],
+            'selectProduct' => $response['selectProduct'],
             'created_at' => $response['created_at'],
             'updated_at' => $response['updated_at'],
         ];
@@ -68,31 +68,31 @@ class GalleryProductController extends Controller
             );
         }
 
-          $response = $galleries->toArray();
+        $response = $galleries->toArray();
 
         // Menghapus bagian 'user_id' dari setiap item di dalam 'data'
         $responseData = $response['data'];
         $modifiedData = [];
         foreach ($responseData as $item) {
             $modifiedItem = [
-            'id' => $item['id'],
-            'products_id' => $item['products_id'],
-            'url' => $item['url'],
-            'selectProduct' => $item['selectProduct'],
-            'deleted_at' => $item['deleted_at'],
-            'created_at' => $item['created_at'],
-            'updated_at' => $item['updated_at'],
-            
-        ];
-        $modifiedData[] = $modifiedItem;
+                'id' => $item['id'],
+                'products_id' => $item['products_id'],
+                'url' => $item['url'],
+                'selectProduct' => $item['selectProduct'],
+                'deleted_at' => $item['deleted_at'],
+                'created_at' => $item['created_at'],
+                'updated_at' => $item['updated_at'],
+
+            ];
+            $modifiedData[] = $modifiedItem;
         }
-    
+
         $response['data'] = $modifiedData;
-    
+
         return ResponseFormatter::success($response, 'All Product Photos Successfully taken');
     }
-    
-    
+
+
     public function deleteGallery($id)
     {
         $gallery = ProductGallery::find($id);

@@ -22,7 +22,7 @@ class Product extends Model
     protected $fillable = [
         'name', 'description', 'quantity', 'price', 'category_id', 'user_id', 'slug',
         'rate', 'picturePath', 'product_origin', 'product_material', 'weight', 'sold_quantity', 'sku',  'kondisi_produk', 'store_id', 'photo1',
-        'photo2', 'photo3','photo4',
+        'photo2', 'photo3', 'photo4',
     ];
 
 
@@ -75,19 +75,19 @@ class Product extends Model
         // ? kebalikan dari relasi 
         return $this->belongsTo(ProductCategory::class, 'category_id', 'id');
     }
-    
+
     public function store()
     {
         return $this->belongsTo(Store::class, 'store_id', 'id');
     }
 
-    
+
     // Definisi relasi dengan model TransactionItem
     public function transactions()
     {
         return $this->hasMany(TransactionItem::class, 'product_id');
     }
-    
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

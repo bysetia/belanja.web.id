@@ -21,13 +21,13 @@ class SelectCourier extends Model
     {
         return $this->belongsTo(Courier::class, 'courier_id'); // Tambahkan 'courier_id' sebagai argumen
     }
-    
-     public function couriers()
+
+    public function couriers()
     {
         return $this->belongsTo(Courier::class);
     }
-    
-     public function stores()
+
+    public function stores()
     {
         return $this->belongsToMany(Store::class, 'select_courier', 'select_courier_id', 'store_id')
             ->withPivot('store_id', 'courier_id'); // Add pivot fields

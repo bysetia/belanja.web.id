@@ -18,7 +18,7 @@ class ProductController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-           $query = Product::with('category');
+            $query = Product::with('category');
 
             return DataTables::of($query)
                 ->addColumn('action', function ($item) {
@@ -81,7 +81,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-         if (request()->ajax()) {
+        if (request()->ajax()) {
             $query = Product::with(['product', 'transaction'])->where('transactions_id', $transaction->id);
 
             return DataTables::of($query)

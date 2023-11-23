@@ -27,7 +27,7 @@ class PromoAddedNotification extends Notification
      *
      * @param array $promoData
      */
-   public function __construct(Promo $promoData, User $user)
+    public function __construct(Promo $promoData, User $user)
     {
         $this->promoData = $promoData->toArray();
         $this->promo = $promoData; // Tetapkan objek promo ke properti $this->promo
@@ -57,7 +57,7 @@ class PromoAddedNotification extends Notification
         //     ->line('Promo Title: ' . ($this->promo ? $this->promo->title : 'N/A'))
         //     ->line('Promo Description: ' . ($this->promo ? $this->promo->description : 'N/A'));
         $user = $notifiable;
-        
+
         return (new MailMessage)
             ->markdown('emails.promo_added_notification', [
                 'user' => $notifiable,

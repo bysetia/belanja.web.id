@@ -13,7 +13,7 @@ class TransactionItem extends Model
 
     use HasFactory;
 
-   protected $fillable = [
+    protected $fillable = [
         'cart_id',
         'product_id',
         'quantity',
@@ -31,7 +31,7 @@ class TransactionItem extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }
-    
+
     public function transaction()
     {
         return $this->belongsTo(Transaction::class, 'transaction_id', 'id');

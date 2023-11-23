@@ -8,8 +8,6 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\StoreRequest;
 
-
-
 class StoreController extends Controller
 {
     /**
@@ -38,15 +36,15 @@ class StoreController extends Controller
                 ->addColumn('logo', function ($item) {
                     $imagePath = $item->logo ? asset($item->logo) : asset('images/logo.svg');
                     return '<div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-                                <img src="' . $imagePath .'" width="50" height="50" style="object-fit: cover;">
+                                <img src="' . $imagePath . '" width="50" height="50" style="object-fit: cover;">
                             </div>';
                 })
-                ->rawColumns(['action','logo'])
+                ->rawColumns(['action', 'logo'])
                 ->make();
         }
         return view('pages.dashboard.store.index');
     }
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -77,7 +75,7 @@ class StoreController extends Controller
      */
     public function edit(Store $store)
     {
-          return view('pages.dashboard.store.edit', [
+        return view('pages.dashboard.store.edit', [
             'item' => $store
         ]);
     }

@@ -9,7 +9,7 @@ use App\Helpers\ResponseFormatter;
 
 class ReviewLabelController extends Controller
 {
-      public function index()
+    public function index()
     {
         $labels = ReviewLabel::all();
         return ResponseFormatter::success($labels, 'Data label berhasil diambil.');
@@ -38,7 +38,7 @@ class ReviewLabelController extends Controller
             'label' => $request->input('label'),
         ]);
 
-         return ResponseFormatter::success([
+        return ResponseFormatter::success([
             'id' => $newLabel->id,
             'label' => $newLabel->label,
         ], 'Label berhasil diperbaharui.');
