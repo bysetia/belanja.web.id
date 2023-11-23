@@ -1,0 +1,4 @@
+[17-Aug-2023 14:38:52 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/bimbeln1/belanja.penuhmakna.co.id/ecommerce/database/migrations/2014_10_12_000000_create_users_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/bimbeln1/belanja.penuhmakna.co.id/ecommerce/database/migrations/2014_10_12_000000_create_users_table.php on line 7
